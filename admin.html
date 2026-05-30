@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم AURA</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 p-6 md:p-10">
+
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-6 gap-4">
+            <h1 class="text-3xl font-bold text-gray-900">لوحة تحكم AURA</h1>
+            <div class="flex flex-wrap items-center gap-4 bg-white p-2 px-4 rounded-xl shadow-sm border w-full md:w-auto">
+                <span class="text-gray-600">السعر الحالي:</span>
+                <span id="current-price" class="font-bold text-xl text-black">JOD 15</span>
+                <div class="flex gap-2 mr-auto md:mr-4">
+                    <input id="price-input" type="number" placeholder="السعر الجديد" class="w-28 h-10 px-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black">
+                    <button onclick="updatePrice()" class="h-10 bg-black text-white px-4 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">تحديث</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl border shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-2">
+                    <span class="text-sm font-medium text-gray-500">إجمالي الطلبات</span>
+                    <i data-lucide="package" class="h-5 w-5 text-gray-400"></i>
+                </div>
+                <div id="total-orders" class="text-2xl font-bold text-gray-900 mt-2">0</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-2">
+                    <span class="text-sm font-medium text-gray-500">الطلبات المعلقة</span>
+                    <i data-lucide="clock" class="h-5 w-5 text-orange-400"></i>
+                </div>
+                <div id="pending-orders" class="text-2xl font-bold text-gray-900 mt-2">0</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-2">
+                    <span class="text-sm font-medium text-gray-500">الطلبات المكتملة</span>
+                    <i data-lucide="check-circle-2" class="h-5 w-5 text-green-500"></i>
+                </div>
+                <div id="completed-orders" class="text-2xl font-bold text-gray-900 mt-2">0</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-2">
+                    <span class="text-sm font-medium text-gray-500">إجمالي الإيرادات</span>
+                    <i data-lucide="dollar-sign" class="h-5 w-5 text-black"></i>
+                </div>
+                <div id="total-revenue" class="text-2xl font-bold text-gray-900 mt-2">0 JOD</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-right">
+                    <thead class="text-xs text-gray-700 bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-4">رقم الطلب</th>
+                            <th class="px-6 py-4">اسم العميل</th>
+                            <th class="px-6 py-4">الهاتف</th>
+                            <th class="px-6 py-4">العنوان</th>
+                            <th class="px-6 py-4">اللون</th>
+                            <th class="px-6 py-4">الكمية</th>
+                            <th class="px-6 py-4">الإجمالي</th>
+                            <th class="px-6 py-4">التاريخ</th>
+                            <th class="px-6 py-4">الحالة</th>
+                            <th class="px-6 py-4">إجراءات</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // تهيئة الأيقونات
+        lucide.createIcons();
+
+        // جلب البيانات من الـ API وتحديث الـ DOM
+        async function loadDashboardData() {
+            try {
+                // ملاحظة: روابط الـ API يتم توجيهها تلقائياً على نفس الدومين
+                const [ordersRes, statsRes, settingsRes] = await Promise.all([
+                    fetch('/api/orders').then(res => res.json().catch(() => [])),
+                    fetch('/api/orders/stats').then(res => res.json().catch(() => ({ totalOrders: 0, pendingOrders: 0, completedOrders: 0, totalRevenue: 0 }))),
+                    fetch('/api/product-settings').then(res => res.json().catch(() => ({ price: 15 })))
+                ]);
+
+                // تحديث الإحصائيات والسعر
+                document.getElementById('current-price').innerText = `JOD ${settingsRes.price || 15}`;
+                document.getElementById('total-orders').innerText = statsRes.totalOrders || 0;
+                document.getElementById('pending-orders').innerText = statsRes.pendingOrders || 0;
+                document.getElementById('completed-orders').innerText = statsRes.completedOrders || 0;
+                document.getElementById('total-revenue').innerText = `${statsRes.totalRevenue || 0} JOD`;
+
+                // بناء جدول الطلبات
+                const tbody = document.getElementById('orders-tbody');
+                tbody.innerHTML = '';
+
+                if (!ordersRes || ordersRes.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-500">لا توجد طلبات حتى الآن</td></tr>`;
+                    return;
+                }
+
+                ordersRes.forEach(order => {
+                    const date = new Date(order.createdAt).toLocaleDateString('ar-JO', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const tr = document.createElement('tr');
+                    tr.className = "bg-white border-b hover:bg-gray-50 transition";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-gray-900">#${order.id}</td>
+                        <td class="px-6 py-4">${order.customerName}</td>
+                        <td class="px-6 py-4" style="direction: ltr; text-align: right;">${order.phone}</td>
+                        <td class="px-6 py-4 max-w-xs truncate" title="${order.address}">${order.address}</td>
+                        <td class="px-6 py-4">${order.color}</td>
+                        <td class="px-6 py-4">${order.quantity}</td>
+                        <td class="px-6 py-4 font-bold text-gray-900">${order.totalPrice} JOD</td>
+                        <td class="px-6 py-4 text-gray-500">${date}</td>
+                        <td class="px-6 py-4">
+                            <select onchange="updateStatus(${order.id}, this.value)" class="border rounded px-2 py-1 text-xs bg-gray-50 focus:outline-none">
+                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>معلق</option>
+                                <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغى</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="deleteOrder(${order.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                lucide.createIcons();
+            } catch (error) {
+                console.error("خطأ في جلب البيانات:", error);
+            }
+        }
+
+        // تحديث حالة الطلب
+        async function updateStatus(id, status) {
+            try {
+                const res = await fetch(`/api/orders/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (res.ok) {
+                    alert("تم تحديث الحالة بنجاح");
+                    loadDashboardData();
+                }
+            } catch (err) { alert("فشل تحديث الحالة"); }
+        }
+
+        // حذف طلب
+        async function deleteOrder(id) {
+            if (!confirm("هل أنت متأكد من حذف هذا الطلب؟")) return;
+            try {
+                const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert("تم حذف الطلب بنجاح");
+                    loadDashboardData();
+                }
+            } catch (err) { alert("فشل في حذف الطلب"); }
+        }
+
+        // تحديث السعر
+        async function updatePrice() {
+            const priceInput = document.getElementById('price-input');
+            const newPrice = Number(priceInput.value);
+            if (!newPrice || isNaN(newPrice)) return;
+
+            try {
+                const res = await fetch('/api/product-settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price: newPrice })
+                });
+                if (res.ok) {
+                    alert("تم تحديث السعر بنجاح");
+                    priceInput.value = '';
+                    loadDashboardData();
+                }
+            } catch (err) { alert("فشل تحديث السعر"); }
+        }
+
+        // تشغيل الجلب التلقائي عند فتح الصفحة
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>
