@@ -449,7 +449,7 @@ export default function CheckoutPage() {
                 }}
               >
                 <p className="font-sans text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  💵 <strong style={{ color: "#fff" }}>Cash on Delivery</strong> — Pay
+                   <strong style={{ color: "#fff" }}>Cash on Delivery</strong> — Pay
                   when you receive your AURA bottle.
                 </p>
               </div>
