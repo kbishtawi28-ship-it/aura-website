@@ -4,13 +4,13 @@ import "./globals.css";
 
 const geistSans = Geist({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-geist-sans",
 });
 
 const bebas = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-bebas",
+  variable: "--font-bebas-neue",
 });
 
 export const metadata: Metadata = {
