@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-bebas: var(--font-bebas-neue), "Bebas Neue", sans-serif;
+
+  --color-background: #0b0b0b;
+  --color-foreground: #ffffff;
+  --color-accent: #ffcc00;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
